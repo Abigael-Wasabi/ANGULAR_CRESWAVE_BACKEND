@@ -3,17 +3,17 @@ const Tasks = require('../models/tasks');
 
 const addTask = async (req, res, next) => {
     try{
-      const { task, subtask } = req.body;
+      const { title, description} = req.body;
       console.log("Incoming request:", req.body);
-      if (!task) {
-        console.error("Task name is empty.");
-        return res.status(400).json({ message: 'Please insert a task.' });
+      if (!title && !description) {
+        console.error("Please provide all details");
+        return res.status(400).json({ message: 'Please provide all details' });
       }
-      const existingTask = await Tasks.findOne({ where: { task: task } });
+      const existingTask = await Tasks.findOne({ where: { title: title } });
       if (existingTask) {
-        return res.status(400).json({ message: `Task with name ${task} already exists.`});
+        return res.status(400).json({ message: `Task with name ${title} already exists.`});
       } 
-      const newTask = await Tasks.create({ task, subtask, status: 'incomplete' });
+      const newTask = await Tasks.create({ title, description, status: 'incomplete' });
       res.status(201).json({ message: 'Task added successful.', Task: newTask});
       console.log(newTask);
     } catch (error) { 
@@ -22,43 +22,36 @@ const addTask = async (req, res, next) => {
     }
     };
 
-const completeTask = async (req, res, next) => {
-  try {
-      const { taskId } = req.body;
-      if (!taskId) {
-          return res.status(400).json({ message: 'Please provide a taskId.' });
-      }
-      const updatedTask = await Tasks.update({ status: 'completed' }, { where: { taskID: taskId } });
-      res.status(201).json({ message: 'Task completed successfully.', Task: updatedTask });
-      console.log(updatedTask);
-  } catch (error) {
-      console.error('Error completing task: ', error);
-      res.status(500).json({ message: 'Server error.' });
-  }
-};
  
-// const editTask = async (req, res) => {
-//   try {
-//     const 
-//   }
-// }
+    const editTask = async (req, res) => {
+      try {
+        const { taskId, title, description, status } = req.body;
+        if (!taskId) {
+          return res.status(400).json({ message: 'Please provide a taskId' });
+        }
+        let task = await Tasks.findById(taskId);
+        if (!task) {
+          return res.status(404).json({ message: 'Task not found' });
+        }
+        if (title) {
+          task.title = title;
+        }
+        if (description) {
+          task.description = description;
+        }
+        if (status) {
+          task.status = status;
+        }
+        await task.save();
+        return res.status(200).json({ message: 'Task updated successfully', task });
+      } catch (error) {
+        console.error('Error editing task:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+    }
+    
  
 
-const undoComplete = async (req, res, next) => {
-            try{
-              const { taskId } = req.body;
-              if (!taskId) {
-                return res.status(400).json({ message: 'Please providea task id.' });
-              }
-              const updatedTask = await Tasks.update({ status: 'incomplete' }, { where: { taskID: taskId } });
-               
-              res.status(201).json({ message: 'complete task undone.', Task: updatedTask});
-              console.log(updatedTask);
-            } catch (error) { 
-              console.error('Error undoing: ', error);
-              res.status(500).json({ message: 'Server error.' });
-            }
-            };
 const getTasks = async (req, res) => { 
     try {
         const tasks = await Tasks.findAll();
@@ -84,4 +77,4 @@ const deleteTask = async (req, res) => {
     }
 };
 
-module.exports={ addTask, completeTask, undoComplete, getTasks, deleteTask }
+module.exports={ addTask, editTask, getTasks, deleteTask }

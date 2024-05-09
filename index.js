@@ -15,7 +15,7 @@ const {authenticateUser} = require('./middleware/auth');
 db.sync({alert:true});
 
 const corsOptions = {
-  origin: 'http://localhost:3000', 
+  origin: 'http://localhost:4200', 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
 };
 

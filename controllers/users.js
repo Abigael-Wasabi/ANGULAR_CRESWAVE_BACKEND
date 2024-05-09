@@ -8,6 +8,7 @@ const signUp = async (req, res, next) => {
     try{
       const { username, email, password, } = req.body;
       if ( !username || !email || !password) {
+        console.log("All details must be filled.")
         return res.status(400).json({ message: 'All details must be filled.' });
       }
       const existingUser = await users.findOne({ where: { email: email } });
