@@ -5,7 +5,7 @@ const addTask = async (req, res, next) => {
     try{
       const { title, description} = req.body;
       console.log("Incoming request:", req.body);
-      if (!title && !description) {
+      if (!title || !description) {
         console.error("Please provide all details");
         return res.status(400).json({ message: 'Please provide all details' });
       }
@@ -29,7 +29,7 @@ const addTask = async (req, res, next) => {
         if (!taskId) {
           return res.status(400).json({ message: 'Please provide a taskId' });
         }
-        let task = await Tasks.findById(taskId);
+        let task = await Tasks.findByPk(taskId);
         if (!task) {
           return res.status(404).json({ message: 'Task not found' });
         }
@@ -66,15 +66,15 @@ const getTasks = async (req, res) => {
 const deleteTask = async (req, res) => {
     const taskId = req.params.taskId;
     try {
-        const deletedTask = await Tasks.findByIdAndDelete(taskId);
-        if (!deletedTask) {
+        const deletedTask = await Tasks.destroy({ where: { id: taskId }});
+        if ( deletedTask === 0) {
             return res.status(404).json({ message: 'Task not found' });
         }
-        res.json({ message: 'Task deleted successfully', deletedTask });
+        res.json({ message: 'Task deleted successfully', taskId });
     } catch (error) {
         console.error('Error deleting task:', error);
         res.status(500).json({ error: 'Error deleting task' });
-    }
+    } 
 };
 
 module.exports={ addTask, editTask, getTasks, deleteTask }
